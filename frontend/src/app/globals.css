@@ -1,0 +1,35 @@
+@import "tailwindcss";
+
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.custom-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.no-scroll {
+  overflow: hidden;
+  overscroll-behavior: none;
+  touch-action: none;
+}
+
+
+input[type="number"] {
+appearance: textfield;
+-moz-appearance: textfield;
+}

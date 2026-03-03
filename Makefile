@@ -1,0 +1,42 @@
+CWD             := .
+DOTENV_PATH     := $(CWD)/.env
+
+DOCKER_COMPOSE  := docker compose -f $(CWD)/docker-compose.yaml 
+RMDIR           := rm -fr
+MKDIR           := mkdir -p
+
+setup:
+	@if [ ! -f $(DOTENV_PATH) ]; then \
+			cp $(CWD)/.env.sample $(DOTENV_PATH) && \
+			echo ".env file not found. Created .env from sample."; \
+			openssl req -x509 -newkey rsa:2048 -keyout ./etc/self.key -out ./etc/self.crt -days 365 -nodes \
+			-subj "/C=MA/ST=Morocco/L=Khouribga/O=1337/CN=localhost" 2>/dev/null; \
+	fi
+
+up: setup
+	@$(DOCKER_COMPOSE) up --build 
+
+frontend: setup
+	@$(DOCKER_COMPOSE) up frontend --build
+
+backend: setup
+	@$(DOCKER_COMPOSE) up backend --build
+
+down:
+	@$(DOCKER_COMPOSE) down
+
+status:
+	@$(DOCKER_COMPOSE) ps
+
+logs:
+	@$(DOCKER_COMPOSE) logs
+
+
+clean:
+	@$(DOCKER_COMPOSE) down -v
+	@$(RMDIR) $(WP_VOLUME) $(DB_VOLUME) $(PT_VOLUME)
+
+prune: clean
+	@docker system prune -af --volumes
+
+.PHONY: prune clean logs status down up setup

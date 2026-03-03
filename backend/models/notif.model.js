@@ -1,0 +1,60 @@
+import { NOTIFICATION_TYPES } from "../rules/notifications.rules.js";
+
+class notifModel {
+	getNotifSelectQuery() {
+		return `SELECT notif.*, u.username AS sender_username, u.avatar AS sender_avatar
+			FROM notifications notif
+			LEFT JOIN users u ON u.id = notif.sender_id`;
+	}
+
+  async create(db, { senderId, receiverId, type, title, message, payload = null, expiresAt = null }) {
+    if (!Object.values(NOTIFICATION_TYPES).includes(type)) return null;
+    const safeExpiresAt = expiresAt instanceof Date ? expiresAt.toISOString() : expiresAt ?? null;
+
+    const res = db.prepare(
+        `INSERT INTO notifications(sender_id, receiver_id, type, title, message, payload, expires_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`
+      )
+      .run(senderId, receiverId, type, title, message, payload, safeExpiresAt);
+    return { id: res.lastInsertRowid };
+  }
+
+  async getById(db, id) {
+    return db.prepare(`${this.getNotifSelectQuery()} WHERE notif.id = ?`).get(id);
+  }
+
+  async updateStatus(db, id, status) {
+    return db.prepare(`UPDATE notifications SET status = ? WHERE id = ?`).run(status, id);
+  }
+
+  async markAsRead(db, id) {
+    return db.prepare(`UPDATE notifications SET is_read = 1 WHERE id = ?`).run(id);
+  }
+
+  async markAsExpired(db, id) {
+    return db.prepare(`UPDATE notifications SET is_expired = 1 WHERE id = ?`).run(id);
+  }
+
+  async getForUser(db, userId) {
+    return db.prepare(`${this.getNotifSelectQuery()} WHERE notif.receiver_id = ?
+  	ORDER BY notif.created_at DESC`).all(userId);
+
+  }
+
+	updateNotificationStatus(db, { notifId, status, isRead = 1 }) {
+		const prepared = db.prepare(`UPDATE notifications SET status = ?, is_read = ? WHERE id = ?`);
+		return prepared.run(status, isRead, notifId);
+	}
+
+	getNotificationById(db, notifId) {
+		return db.prepare(`${this.getNotifSelectQuery()} WHERE notif.id = ?`).get(notifId);
+	}
+
+	getUnreadCount(db, userId){
+		return db.prepare(`SELECT COUNT(*) AS unreadCount FROM notifications WHERE receiver_id = ?
+			AND is_read = 0 AND (is_expired = 0 OR is_expired IS NULL)`).get(userId);
+	}
+}
+
+
+export const NotifModel = new notifModel();

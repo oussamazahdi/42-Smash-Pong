@@ -1,0 +1,44 @@
+networks:
+  transcendence:
+    driver: bridge
+  
+services:
+
+  backend:
+    build: ./backend
+    volumes:
+      - ./backend/database:/app/database
+      - ./backend/uploads:/app/uploads
+    env_file:
+      - .env
+    networks:
+      - transcendence
+    restart: unless-stopped
+
+  frontend:
+    build: 
+      context: ./frontend
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+    env_file:
+      - .env
+    networks:
+      - transcendence
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./etc/nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./etc/self.crt:/etc/nginx/ssl/self.crt:ro
+      - ./etc/self.key:/etc/nginx/ssl/self.key:ro
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - transcendence
+
+
