@@ -1,4 +1,4 @@
-# 42 Ft_Transcendence
+# 42 Smash Pong
 
 A full-stack web application built as part of the 42 curriculum — featuring real-time multiplayer Pong, live chat, and user management.
 
@@ -56,7 +56,7 @@ make re         # Rebuild everything from scratch
 ## Project Structure
 
 ```
-ft_transcendence/
+smash_pong/
 ├── frontend/        # Next.js app
 ├── backend/         # Node.js API & WebSocket server
 ├── nginx/           # Nginx configuration
