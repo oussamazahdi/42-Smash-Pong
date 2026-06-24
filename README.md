@@ -85,7 +85,3 @@ cp .env.example .env
 ```
 
 ---
-
-## Authors
-
-Made with ☕ at 42.
